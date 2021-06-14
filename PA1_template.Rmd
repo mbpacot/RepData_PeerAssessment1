@@ -8,23 +8,65 @@ output:
 
 ## Loading and preprocessing the data
 ```{r, data}
-getwd()
-data <- read.csv(unz("activity.zip", "activity.csv"), header = TRUE,
-                 sep = ",")
-head(data)
-```
 
+data <- read.csv(unz("activity.zip", "activity.csv"), header = FALSE)
+colnames(data) <- c("Steps", "Date", "Interval")
+head(data)
+Steps <- data$Steps #column1
+Date <- data$Date #column2
+Interval <- data$Interval #column3
+
+```
 
 ## What is mean total number of steps taken per day?
 
+stepsMean <- mean(!is.na(Steps))
+stepsMean
+stepsMedian <- median(!is.na(Steps))
+stepsMedian
+
+# Create the histogram
+steps <- as.numeric(Steps)
+hist(steps[2:NROW(steps)], xlab = "Steps", col = "yellow", border = "blue", xlim = c(0,810), ylim = c(0,1000), breaks = 10)
 
 
 ## What is the average daily activity pattern?
 
+intervalMean <- mean(!is.na(Interval))
+intervalMean
+
+interval <- as.numeric(Interval)
+plot(interval[700:800], steps[700:800], col="BLUE", type = "l")
 
 
 ## Imputing missing values
 
+sumNa <- sum(is.na(data))
+sumNa
+is.na_replace_meanSteps <- as.numeric(data$Steps)                # Duplicate first column
+x_num_mean <- mean(is.na_replace_meanSteps, na.rm = TRUE)        # Calculate mean
+is.na_replace_meanSteps[is.na(is.na_replace_meanSteps)] <- x_num_mean # Replace by mean
+data2 <- data.frame(cbind(is.na_replace_meanSteps,Date,Interval))
+colnames(data2) <- c("Steps", "Date", "Interval")
+
+steps2 <- as.numeric(data2$Steps)
+hist(steps2[2:NROW(steps2)], xlab = "Steps", col = "yellow", border = "blue", xlim = c(0,810), ylim = c(0,1000), breaks = 10)
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+library(plyr)
+
+analysis_3_data <- ddply(data2[,1:2], .(Date), function(set) { sum(as.numeric(data2$Steps)) })
+analysis_3_data
+
+select_days <- weekdays(data2$Date)
+data2_select_days <- ifelse(select_days == "Sunday" | select_days == "Saturday", c("Weekend"), c("Weekdays"))
+data2_select_days <- factor(data2_select_days)
+
+analysis_weekdays <- ddply(data2[data2_select_days == "Weekdays", ], .(interval), function(set) { mean(as.numeric(data2$Steps)) })
+analysis_weekends <- ddply(data2[data2_select_days == "Weekend", ], .(interval), function(set) { mean(set$steps, na.rm = TRUE) })
+
+plot_weekdays <- ggplot(data = analysis_weekdays) + aes(x = factor(interval), y = steps, group = 1) + geom_line() + labs(x ="5-minute interval", y = "Average number of steps across weekdays") + theme(axis.text.x = element_text(size = 0)) + geom_vline(xintercept= hour_intervals, linetype="dotted") + geom_vline(xintercept= 144, colour = "red") + geom_text(x=144, y = 150, label="12 pm", angle = 90)
+
+plot_weekends <- ggplot(data = analysis_weekends) + aes(x = factor(interval), y = steps, group = 1) + geom_line() + labs(x ="5-minute interval", y = "Average number of steps across weekends") + theme(axis.text.x = element_text(size = 0)) + geom_vline(xintercept= hour_intervals, linetype="dotted") + geom_vline(xintercept= 144, colour = "red") + geom_text(x=144, y = 150, label="12 pm", angle = 90)
