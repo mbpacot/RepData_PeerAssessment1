@@ -67,5 +67,5 @@ data2_select_days <- factor(data2_select_days)
 analysis_weekdays <- ddply(data2[data2_select_days == "Weekdays", ], .(interval), function(set) { mean(as.numeric(data2$Steps)) })
 analysis_weekends <- ddply(data2[data2_select_days == "Weekend", ], .(interval), function(set) { mean(set$steps, na.rm = TRUE) })
 
-plot_weekdays <- ggplot(data = analysis_weekdays) + aes(x = factor(interval), y = steps, group = 1) + geom_line() + labs(x ="5-minute interval", y = "Average number of steps across weekdays") + theme(axis.text.x = element_text(size = 0)) + geom_vline(xintercept= hour_intervals, linetype="dotted") + geom_vline(xintercept= 144, colour = "red") + geom_text(x=144, y = 150, label="12 pm", angle = 90)
-plot_weekends <- ggplot(data = analysis_weekends) + aes(x = factor(interval), y = steps, group = 1) + geom_line() + labs(x ="5-minute interval", y = "Average number of steps across weekends") + theme(axis.text.x = element_text(size = 0)) + geom_vline(xintercept= hour_intervals, linetype="dotted") + geom_vline(xintercept= 144, colour = "red") + geom_text(x=144, y = 150, label="12 pm", angle = 90)
+plot_weekdays <- ggplot2(data = analysis_weekdays) 
+plot_weekdays <- ggplot2(data = analysis_weekends) 
